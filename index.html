@@ -215,13 +215,13 @@
     };
 
     
-document.getElementById("sendButton").onclick = function() {
+  document.getElementById("sendButton").onclick = function() {
     if (tg && typeof tg.sendData === "function") {
         tg.sendData(JSON.stringify(booking));
     } else {
         alert("Telegram Mini App is not available.");
     }
-};
+    };
 
     calculateTotal();
   </script>
