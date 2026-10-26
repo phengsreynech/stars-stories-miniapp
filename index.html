@@ -214,15 +214,14 @@
       form.hidden = false;
     };
 
-    document.getElementById("sendButton").onclick = function() {
-      // sendData works when opened using a Telegram
-      // reply-keyboard Mini App button.
-      if (tg && tg.initData) {
+    
+document.getElementById("sendButton").onclick = function() {
+    if (tg && typeof tg.sendData === "function") {
         tg.sendData(JSON.stringify(booking));
-      } else {
-        alert("Open this page through the Telegram bot to submit.");
-      }
-    };
+    } else {
+        alert("Telegram Mini App is not available.");
+    }
+};
 
     calculateTotal();
   </script>
