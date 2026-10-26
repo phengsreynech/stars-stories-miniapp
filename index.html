@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stars & Stories Tickets</title>
+
+  <!-- Telegram Mini App connection -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f3f8;
+      margin: 0;
+      color: #1d2742;
+    }
+
+    header {
+      background: #171d3b;
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    header h1 { margin: 0 0 10px; }
+
+    .container {
+      max-width: 440px;
+      margin: 20px auto;
+      padding: 0 15px 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 16px;
+      box-shadow: 0 3px 15px #00000010;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 17px 0 7px;
+    }
+
+    input, select {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 13px;
+      font-size: 16px;
+      border: 1px solid #ccd1dd;
+      border-radius: 9px;
+      background: white;
+    }
+
+    button {
+      width: 100%;
+      background: #242e63;
+      color: white;
+      border: 0;
+      padding: 15px;
+      border-radius: 9px;
+      font-size: 16px;
+      margin-top: 22px;
+      cursor: pointer;
+    }
+
+    .summary {
+      margin-top: 22px;
+      padding: 16px;
+      background: #f2f3f8;
+      border-radius: 10px;
+    }
+
+    .total {
+      font-weight: bold;
+      font-size: 23px;
+    }
+
+    .note {
+      color: #73798a;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🌟 Stars & Stories</h1>
+    <p>19 December 2026</p>
+    <p>NUM Veal Sbov Campus</p>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Book Your Experience</h2>
+
+      <form id="bookingForm">
+        <label for="name">Full Name</label>
+        <input id="name" type="text"
+               placeholder="Enter your full name"
+               maxlength="100" required>
+
+        <label for="phone">Phone Number</label>
+        <input id="phone" type="tel"
+               placeholder="+85512345678"
+               pattern="\+?[0-9]{8,15}"
+               required>
+
+        <label for="ticket">Ticket Category</label>
+        <select id="ticket">
+          <option value="free">Free Entrance — FREE</option>
+          <option value="passport">Activity Passport — $10.00</option>
+          <option value="stargazing">Stargazing — $4.99</option>
+          <option value="overnight">Overnight — $40.00</option>
+        </select>
+
+        <label for="quantity">Number of Tickets</label>
+        <select id="quantity">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+
+        <div class="summary">
+          <p>Booking Total</p>
+          <div class="total" id="total">$0.00</div>
+        </div>
+
+        <button type="submit">Review Booking</button>
+      </form>
+
+      <div id="review" class="summary" hidden>
+        <h3>Booking Review</h3>
+        <p id="reviewDetails"></p>
+        <button id="sendButton" type="button">
+          Send Demo to Bot
+        </button>
+        <button id="editButton" type="button">
+          Edit Details
+        </button>
+      </div>
+
+      <p class="note">
+        Demo only. No payment or ticket confirmation.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    // Store prices in cents
+    const tickets = {
+      free: { name: "Free Entrance", price: 0 },
+      passport: { name: "Activity Passport", price: 1000 },
+      stargazing: { name: "Stargazing Entrance", price: 499 },
+      overnight: { name: "Overnight Under the Stars", price: 4000 }
+    };
+
+    const form = document.getElementById("bookingForm");
+    const ticketInput = document.getElementById("ticket");
+    const quantityInput = document.getElementById("quantity");
+    const totalDisplay = document.getElementById("total");
+    const review = document.getElementById("review");
+
+    let booking = null;
+
+    function calculateTotal() {
+      const price = tickets[ticketInput.value].price;
+      const quantity = Number(quantityInput.value);
+      const total = price * quantity;
+
+      totalDisplay.textContent = "$" + (total / 100).toFixed(2);
+      return total;
+    }
+
+    ticketInput.addEventListener("change", calculateTotal);
+    quantityInput.addEventListener("change", calculateTotal);
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      booking = {
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        ticket: ticketInput.value,
+        quantity: Number(quantityInput.value)
+      };
+
+      const ticket = tickets[booking.ticket];
+      const total = calculateTotal();
+
+      document.getElementById("reviewDetails").textContent =
+        `${booking.name} | ${booking.phone} | ` +
+        `${ticket.name} | ${booking.quantity} ticket(s) | ` +
+        `$${(total / 100).toFixed(2)}`;
+
+      form.hidden = true;
+      review.hidden = false;
+    });
+
+    document.getElementById("editButton").onclick = function() {
+      review.hidden = true;
+      form.hidden = false;
+    };
+
+    document.getElementById("sendButton").onclick = function() {
+      // sendData works when opened using a Telegram
+      // reply-keyboard Mini App button.
+      if (tg && tg.initData) {
+        tg.sendData(JSON.stringify(booking));
+      } else {
+        alert("Open this page through the Telegram bot to submit.");
+      }
+    };
+
+    calculateTotal();
+  </script>
+</body>
+</html>
