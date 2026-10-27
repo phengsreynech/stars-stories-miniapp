@@ -216,10 +216,12 @@
 
     
   document.getElementById("sendButton").onclick = function() {
+    const tg = window.Telegram?.WebApp;
+
     if (tg && typeof tg.sendData === "function") {
         tg.sendData(JSON.stringify(booking));
     } else {
-        alert("Telegram Mini App is not available.");
+        alert("Please open this form through your Telegram bot.");
     }
     };
 
